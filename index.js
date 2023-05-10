@@ -10,19 +10,28 @@ MongoClient.connect(url,{ useNewUrlParser: true, useUnifiedTopology: true },(err
     console.log('Connected correctly to the server');
     const db = client.db(dbname);
     const collection = db.collection('dishes');
-    collection.insertOne({"name":"Uthappizza","description":"test"},(err,result)=>{
-        assert.equal(err,null);
-        console.log('After insert');
-        console.log(result.ops);
+    dboper.insertDocument(db, { name: "Vadonut", description: "Test"},
+        "dishes", (result) => {
+            console.log("Insert Document:\n", result.ops);
 
-        collection.find({}).toArray((err,docs)=>{
-            assert.equal(err,null);
-            console.log('Found:\n');
-            console.log(docs);
-            db.dropCollection('dishes',(err,result)=> {
-                assert.equal(err,null);
-                client.close();
+            dboper.findDocuments(db, "dishes", (docs) => {
+                console.log("Found Documents:\n", docs);
+
+                dboper.updateDocument(db, { name: "Vadonut" },
+                    { description: "Updated Test" }, "dishes",
+                    (result) => {
+                        console.log("Updated Document:\n", result.result);
+
+                        dboper.findDocuments(db, "dishes", (docs) => {
+                            console.log("Found Updated Documents:\n", docs);
+
+                            db.dropCollection("dishes", (result) => {
+                                console.log("Dropped Collection: ", result);
+
+                                client.close();
+                            });
+                        });
+                    });
             });
-        });
     });
 });
